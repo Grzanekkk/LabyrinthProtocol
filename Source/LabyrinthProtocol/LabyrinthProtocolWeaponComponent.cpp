@@ -41,7 +41,7 @@ void ULabyrinthProtocolWeaponComponent::Fire()
 			FVector SpawnLocation = GetBoneLocation( MuzzleSocketName );
 			if( SpawnLocation.IsNearlyZero() )
 			{
-				// SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector( MuzzleOffset );
+				SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector( MuzzleOffset );
 			}
 
 			DrawDebugSphere( World, SpawnLocation, 5.f, 8, FColor::Red, false, 5 );
