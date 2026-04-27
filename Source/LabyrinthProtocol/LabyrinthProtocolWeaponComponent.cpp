@@ -70,6 +70,8 @@ void ULabyrinthProtocolWeaponComponent::Fire()
 			AnimInstance->Montage_Play( FireAnimation, 1.f );
 		}
 	}
+
+	ProcessFiredBP();
 }
 
 bool ULabyrinthProtocolWeaponComponent::AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter )

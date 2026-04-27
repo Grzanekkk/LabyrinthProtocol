@@ -7,6 +7,8 @@
 #include "LabyrinthProtocolWeaponComponent.generated.h"
 
 class ALabyrinthProtocolCharacter;
+class UInputMappingContext;
+class UInputAction;
 
 UCLASS( Blueprintable, BlueprintType, ClassGroup = ( Custom ), meta = ( BlueprintSpawnableComponent ) )
 class LABYRINTHPROTOCOL_API ULabyrinthProtocolWeaponComponent : public USkeletalMeshComponent
@@ -14,50 +16,50 @@ class LABYRINTHPROTOCOL_API ULabyrinthProtocolWeaponComponent : public USkeletal
 	GENERATED_BODY()
 
 public:
-	/** Projectile class to spawn */
 	UPROPERTY( EditDefaultsOnly, Category = Projectile )
 	TSubclassOf< class ALabyrinthProtocolProjectile > ProjectileClass;
 
-	/** Sound to play each time we fire */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Gameplay )
+	UPROPERTY( Category = "Effect", EditAnywhere, BlueprintReadWrite )
 	USoundBase* FireSound;
 
-	/** AnimMontage to play each time we fire */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Gameplay )
+	UPROPERTY( Category = "Effect", EditAnywhere, BlueprintReadWrite )
 	UAnimMontage* FireAnimation;
 
-	/** Gun muzzle's offset from the characters location */
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Gameplay )
+	UPROPERTY( Category = "Effect", EditAnywhere, BlueprintReadWrite )
 	FVector MuzzleOffset;
 
-	/** MappingContext */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = Input )
-	class UInputMappingContext* FireMappingContext;
+	UPROPERTY( Category = "Input", EditAnywhere, BlueprintReadOnly )
+	UInputMappingContext* FireMappingContext;
 
-	/** Fire Input Action */
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = Input )
-	class UInputAction* FireAction;
+	UPROPERTY( Category = "Input", EditAnywhere, BlueprintReadOnly )
+	UInputAction* FireAction;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Camera" )
+	UPROPERTY( Category = "Camera", EditAnywhere, BlueprintReadOnly )
 	FName MuzzleSocketName = "Muzzle";
 
-	/** Sets default values for this component's properties */
-	ULabyrinthProtocolWeaponComponent();
+	UPROPERTY( Category = "Weapon", EditAnywhere, BlueprintReadOnly )
+	int32 MaxAmmo = 30;
 
-	/** Attaches the actor to a FirstPersonCharacter */
+	UPROPERTY( Category = "Weapon", EditAnywhere, BlueprintReadOnly )
+	int32 CurrentAmmo = 30;
+
+public:
 	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	bool AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter );
 
-	/** Make the weapon Fire a Projectile */
 	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	void Fire();
 
+	UFUNCTION( BlueprintImplementableEvent, Category = "Weapon" )
+	void ProcessFiredBP();
+
+public:
+	ULabyrinthProtocolWeaponComponent();
+
 protected:
-	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay( const EEndPlayReason::Type EndPlayReason ) override;
 
 private:
-	/** The Character holding this weapon*/
 	ALabyrinthProtocolCharacter* Character;
 };
