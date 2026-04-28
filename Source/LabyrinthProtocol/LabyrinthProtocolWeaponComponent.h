@@ -15,6 +15,12 @@ class LABYRINTHPROTOCOL_API ULabyrinthProtocolWeaponComponent : public USkeletal
 {
 	GENERATED_BODY()
 
+protected:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnAmmoChanged, ULabyrinthProtocolWeaponComponent*, Weapon );
+
+	UPROPERTY( Category = "Ammo", BlueprintAssignable )
+	FOnAmmoChanged OnAmmoChanged;
+
 public:
 	UPROPERTY( EditDefaultsOnly, Category = Projectile )
 	TSubclassOf< class ALabyrinthProtocolProjectile > ProjectileClass;
@@ -34,13 +40,16 @@ public:
 	UPROPERTY( Category = "Input", EditAnywhere, BlueprintReadOnly )
 	UInputAction* FireAction;
 
+	UPROPERTY( Category = "Input", EditAnywhere, BlueprintReadOnly )
+	UInputAction* ReloadAction;
+
 	UPROPERTY( Category = "Camera", EditAnywhere, BlueprintReadOnly )
 	FName MuzzleSocketName = "Muzzle";
 
-	UPROPERTY( Category = "Weapon", EditAnywhere, BlueprintReadOnly )
+	UPROPERTY( Category = "Ammo", EditAnywhere, BlueprintReadOnly )
 	int32 MaxAmmo = 30;
 
-	UPROPERTY( Category = "Weapon", EditAnywhere, BlueprintReadOnly )
+	UPROPERTY( Category = "Ammo", EditAnywhere, BlueprintReadOnly )
 	int32 CurrentAmmo = 30;
 
 public:
@@ -50,8 +59,13 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	void Fire();
 
+	void Reload();
+
 	UFUNCTION( BlueprintImplementableEvent, Category = "Weapon" )
 	void ProcessFiredBP();
+
+	UFUNCTION( BlueprintImplementableEvent, Category = "Weapon" )
+	void ProcessReloadedBP();
 
 public:
 	ULabyrinthProtocolWeaponComponent();

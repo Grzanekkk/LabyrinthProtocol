@@ -22,56 +22,70 @@ ULabyrinthProtocolWeaponComponent::ULabyrinthProtocolWeaponComponent()
 
 void ULabyrinthProtocolWeaponComponent::Fire()
 {
-	if( Character == nullptr || Character->GetController() == nullptr )
+	if( CurrentAmmo > 0 )
 	{
-		return;
-	}
-
-	// Try and fire a projectile
-	if( ProjectileClass != nullptr )
-	{
-		UWorld* const World = GetWorld();
-		if( World != nullptr )
+		if( Character == nullptr || Character->GetController() == nullptr )
 		{
-			APlayerController* PlayerController = Cast< APlayerController >( Character->GetController() );
-			const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			// const FVector SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
-			// FVector SpawnLocation = GetSocketLocation( MuzzleSocketName );
-			FVector SpawnLocation = GetBoneLocation( MuzzleSocketName );
-			if( SpawnLocation.IsNearlyZero() )
+			return;
+		}
+
+		// Try and fire a projectile
+		if( ProjectileClass != nullptr )
+		{
+			UWorld* const World = GetWorld();
+			if( World != nullptr )
 			{
-				SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector( MuzzleOffset );
+				APlayerController* PlayerController = Cast< APlayerController >( Character->GetController() );
+				const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+				// const FVector SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+				// FVector SpawnLocation = GetSocketLocation( MuzzleSocketName );
+				FVector SpawnLocation = GetBoneLocation( MuzzleSocketName );
+				if( SpawnLocation.IsNearlyZero() )
+				{
+					SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector( MuzzleOffset );
+				}
+
+				// DrawDebugSphere( World, SpawnLocation, 5.f, 8, FColor::Red, false, 5 );
+				//  Set Spawn Collision Handling Override
+				FActorSpawnParameters ActorSpawnParams;
+				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+				// Spawn the projectile at the muzzle
+				World->SpawnActor< ALabyrinthProtocolProjectile >( ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams );
 			}
 
-			DrawDebugSphere( World, SpawnLocation, 5.f, 8, FColor::Red, false, 5 );
-			// Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-			// Spawn the projectile at the muzzle
-			World->SpawnActor< ALabyrinthProtocolProjectile >( ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams );
+			CurrentAmmo = CurrentAmmo - 1;
+			OnAmmoChanged.Broadcast( this );
 		}
-	}
 
-	// Try and play the sound if specified
-	if( FireSound != nullptr )
-	{
-		UGameplayStatics::PlaySoundAtLocation( this, FireSound, Character->GetActorLocation() );
-	}
-
-	// Try and play a firing animation if specified
-	if( FireAnimation != nullptr )
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
-		if( AnimInstance != nullptr )
+		// Try and play the sound if specified
+		if( FireSound != nullptr )
 		{
-			AnimInstance->Montage_Play( FireAnimation, 1.f );
+			UGameplayStatics::PlaySoundAtLocation( this, FireSound, Character->GetActorLocation() );
 		}
-	}
 
-	ProcessFiredBP();
+		// Try and play a firing animation if specified
+		if( FireAnimation != nullptr )
+		{
+			// Get the animation object for the arms mesh
+			UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
+			if( AnimInstance != nullptr )
+			{
+				AnimInstance->Montage_Play( FireAnimation, 1.f );
+			}
+		}
+
+		ProcessFiredBP();
+	}
+}
+
+void ULabyrinthProtocolWeaponComponent::Reload()
+{
+	CurrentAmmo = MaxAmmo;
+	OnAmmoChanged.Broadcast( this );
+
+	ProcessReloadedBP();
 }
 
 bool ULabyrinthProtocolWeaponComponent::AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter )
@@ -101,6 +115,7 @@ bool ULabyrinthProtocolWeaponComponent::AttachWeapon( ALabyrinthProtocolCharacte
 		{
 			// Fire
 			EnhancedInputComponent->BindAction( FireAction, ETriggerEvent::Triggered, this, &ULabyrinthProtocolWeaponComponent::Fire );
+			EnhancedInputComponent->BindAction( ReloadAction, ETriggerEvent::Triggered, this, &ULabyrinthProtocolWeaponComponent::Reload );
 		}
 	}
 
