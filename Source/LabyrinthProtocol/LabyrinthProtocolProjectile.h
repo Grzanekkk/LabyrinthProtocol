@@ -9,29 +9,32 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 
-UCLASS(config=Game)
+UCLASS( config = Game )
 class ALabyrinthProtocolProjectile : public AActor
 {
 	GENERATED_BODY()
 
-	/** Sphere collision component */
-	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
+	UPROPERTY( Category = "Projectile", VisibleDefaultsOnly )
 	USphereComponent* CollisionComp;
 
-	/** Projectile movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = ( AllowPrivateAccess = "true" ) )
 	UProjectileMovementComponent* ProjectileMovement;
+
+	UPROPERTY( Category = "Projectile", EditDefaultsOnly )
+	int32 Damage = 30;
 
 public:
 	ALabyrinthProtocolProjectile();
 
-	/** called when projectile hits something */
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnHit( UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
 
-	/** Returns CollisionComp subobject **/
-	USphereComponent* GetCollisionComp() const { return CollisionComp; }
-	/** Returns ProjectileMovement subobject **/
-	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+	USphereComponent* GetCollisionComp() const
+	{
+		return CollisionComp;
+	}
+	UProjectileMovementComponent* GetProjectileMovement() const
+	{
+		return ProjectileMovement;
+	}
 };
-
