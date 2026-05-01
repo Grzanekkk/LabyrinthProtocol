@@ -1,0 +1,122 @@
+[
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocol.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocol.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocol.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolCharacter.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolCharacter.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolGameMode.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolGameMode.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolPickUpComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolPickUpComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolProjectile.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolProjectile.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolWeaponComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\LabyrinthProtocolWeaponComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\Private\\Components\\HealthComponent.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	},
+	{
+		"file": "F:\\Labirynth Protocol\\LabyrinthProtocol\\Source\\LabyrinthProtocol\\Public\\Components\\HealthComponent.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+			"@F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol\\LabyrinthProtocol.1.rsp"
+		],
+		"directory": "F:\\UE_5.5\\Engine\\Source"
+	}
+]
