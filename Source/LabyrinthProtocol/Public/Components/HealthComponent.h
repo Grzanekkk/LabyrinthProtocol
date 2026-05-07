@@ -40,7 +40,11 @@ protected:
 	int32 CurrentHealth = 100;
 
 public:
+	UFUNCTION( BlueprintCallable )
 	void AddHealth( int32 const DeltaHealth );
+
+	UFUNCTION( BlueprintCallable )
+	void ApplyDamage( int32 const DeltaDamage );
 
 protected:
 	virtual void BeginPlay() override;

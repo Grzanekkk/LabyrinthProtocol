@@ -28,6 +28,11 @@ void UHealthComponent::AddHealth( int32 const DeltaHealth )
 	}
 }
 
+void UHealthComponent::ApplyDamage( int32 const DeltaDamage )
+{
+	AddHealth( -DeltaDamage );
+}
+
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
