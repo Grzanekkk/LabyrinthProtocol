@@ -1,20 +1,25 @@
 {
-	"configurations": [
-		{
-			"name": "LabyrinthProtocolEditor Editor Win64 Development (LabyrinthProtocol)",
-			"compilerPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
-			"cStandard": "c17",
-			"cppStandard": "c++20",
-			"intelliSenseMode": "msvc-x64",
-			"compileCommands": "F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol.json"
-		},
-		{
-			"name": "Win32",
-			"compilerPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
-			"cStandard": "c17",
-			"cppStandard": "c++20",
-			"intelliSenseMode": "msvc-x64",
-			"compileCommands": "F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_Default.json"
-		}
-	]
+    "configurations": [
+        {
+            "name": "LabyrinthProtocolEditor Editor Win64 Development (LabyrinthProtocol)",
+            "compilerPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "msvc-x64",
+            "compileCommands": [
+                "F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_LabyrinthProtocol.json"
+            ]
+        },
+        {
+            "name": "Win32",
+            "compilerPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\bin\\Hostx64\\x64\\cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "msvc-x64",
+            "compileCommands": [
+                "F:\\Labirynth Protocol\\LabyrinthProtocol\\.vscode\\compileCommands_Default.json"
+            ]
+        }
+    ],
+    "version": 4
 }

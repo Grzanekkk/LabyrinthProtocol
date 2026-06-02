@@ -76,4 +76,7 @@ protected:
 
 private:
 	ALabyrinthProtocolCharacter* Character;
+	FTimerHandle ReloadTimerHandle;
+	void FinishReload();
+	bool IsReloading = false;
 };

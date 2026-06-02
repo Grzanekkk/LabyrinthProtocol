@@ -47,5 +47,6 @@ void ALabyrinthProtocolProjectile::OnHit( UPrimitiveComponent* HitComp, AActor* 
 		{
 			OtherHealthComponent->AddHealth( -Damage );
 		}
+		Destroy();
 	}
 }
