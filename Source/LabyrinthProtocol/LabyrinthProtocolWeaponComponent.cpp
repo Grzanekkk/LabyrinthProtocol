@@ -22,7 +22,7 @@ ULabyrinthProtocolWeaponComponent::ULabyrinthProtocolWeaponComponent()
 
 void ULabyrinthProtocolWeaponComponent::Fire()
 {
-	if( CurrentAmmo > 0 && !IsReloading)
+	if( CurrentAmmo > 0 )
 	{
 		if( Character == nullptr || Character->GetController() == nullptr )
 		{
@@ -82,24 +82,10 @@ void ULabyrinthProtocolWeaponComponent::Fire()
 
 void ULabyrinthProtocolWeaponComponent::Reload()
 {
-	// Jeœli ju¿ trwa prze³adowanie, nie rób nic
-	if( GetWorld()->GetTimerManager().IsTimerActive( ReloadTimerHandle ) )
-	{
-		return;
-	}
-	IsReloading = true;
-	// Ustaw timer na 1 sekundê (mo¿esz zmieniæ na dowoln¹ wartoœæ)
-	GetWorld()->GetTimerManager().SetTimer( ReloadTimerHandle, this, &ULabyrinthProtocolWeaponComponent::FinishReload,
-		2.0f, // czas w sekundach
-		false );
 	CurrentAmmo = MaxAmmo;
 	OnAmmoChanged.Broadcast( this );
-	ProcessReloadedBP();
-}
 
-void ULabyrinthProtocolWeaponComponent::FinishReload()
-{
-	IsReloading = false;
+	ProcessReloadedBP();
 }
 
 bool ULabyrinthProtocolWeaponComponent::AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter )
