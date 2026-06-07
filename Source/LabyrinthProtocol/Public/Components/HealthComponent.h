@@ -11,7 +11,7 @@ class LABYRINTHPROTOCOL_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams( FOnHealthChanged, UHealthComponent* const, HealthComponent, int32, CurrentHealth, int32, HealthDelta );
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams( FOnDamaged, UHealthComponent* const, HealthComponent, int32, CurrentHealth, int32, Damage );
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams( FOnHealed, UHealthComponent* const, HealthComponent, int32, CurrentHealth, int32, Healing );
@@ -64,6 +64,15 @@ public:
 		return MaxHealth > 0 ? static_cast< float >( CurrentHealth ) / static_cast< float >( MaxHealth ) : 0.0f;
 	}
 
+	UFUNCTION( BlueprintPure, Category = "Health" )
+	bool IsDead() const
+	{
+		return bIsDead;
+	}
+
 protected:
 	virtual void BeginPlay() override;
+
+private:
+	bool bIsDead = false;
 };

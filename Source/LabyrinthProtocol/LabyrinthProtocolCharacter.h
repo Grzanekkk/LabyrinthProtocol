@@ -11,7 +11,7 @@
 #include "GameFramework/Character.h"
 
 #include "UI/LabyrinthProtocolHUDTypes.h"
-
+#include "LabyrinthProtocolAmmoTypes.h"
 #include "Logging/LogMacros.h"
 
 #include "LabyrinthProtocolCharacter.generated.h"
@@ -47,7 +47,7 @@ UCLASS(config=Game)
 class ALabyrinthProtocolCharacter : public ACharacter
 
 {
-
+public:
 	GENERATED_BODY()
 
 
@@ -215,6 +215,12 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "HUD" )
 
 	void RegisterTrackedWeapon( ULabyrinthProtocolWeaponComponent* Weapon );
+
+
+
+	UFUNCTION( BlueprintCallable, Category = "Weapon|Ammo" )
+
+	bool TryAddReserveAmmo( ELabyrinthProtocolAmmoType AmmoType, int32 Amount );
 
 
 

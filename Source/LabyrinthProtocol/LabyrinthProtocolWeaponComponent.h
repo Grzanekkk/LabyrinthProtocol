@@ -16,7 +16,7 @@ class LABYRINTHPROTOCOL_API ULabyrinthProtocolWeaponComponent : public USkeletal
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam( FOnAmmoChanged, ULabyrinthProtocolWeaponComponent*, Weapon );
 
 	UPROPERTY( Category = "Ammo", BlueprintAssignable )

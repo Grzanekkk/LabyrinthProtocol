@@ -1,5 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+#include "LabyrinthProtocolWeaponComponent.h"
 #include "LabyrinthProtocolCharacter.h"
 #include "LabyrinthProtocolProjectile.h"
 #include "GameFramework/PlayerController.h"

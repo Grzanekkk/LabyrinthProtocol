@@ -21,8 +21,9 @@ void UHealthComponent::AddHealth( int32 const DeltaHealth )
 
 		OnHealthChanged.Broadcast( this, CurrentHealth, DeltaHealth );
 
-		if( CurrentHealth <= 0 )
+		if( CurrentHealth <= 0 && !bIsDead )
 		{
+			bIsDead = true;
 			OnDeath.Broadcast( this );
 		}
 	}

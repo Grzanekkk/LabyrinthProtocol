@@ -33,11 +33,11 @@ void ALabyrinthProtocolPlayerController::OnUnPossess()
 	Super::OnUnPossess();
 }
 
-void ALabyrinthProtocolPlayerController::BindToCharacter( ALabyrinthProtocolCharacter* Character )
+void ALabyrinthProtocolPlayerController::BindToCharacter( ALabyrinthProtocolCharacter* NewCharacter )
 {
 	UnbindFromCharacter();
 
-	BoundCharacter = Character;
+	BoundCharacter = NewCharacter;
 	if( BoundCharacter == nullptr )
 	{
 		return;
