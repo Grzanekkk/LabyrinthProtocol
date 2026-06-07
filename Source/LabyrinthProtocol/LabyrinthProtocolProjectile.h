@@ -14,6 +14,7 @@ class ALabyrinthProtocolProjectile : public AActor
 {
 	GENERATED_BODY()
 
+protected:
 	UPROPERTY( Category = "Projectile", VisibleDefaultsOnly )
 	USphereComponent* CollisionComp;
 
@@ -27,7 +28,7 @@ public:
 	ALabyrinthProtocolProjectile();
 
 	UFUNCTION()
-	void OnHit( UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
+	virtual void OnHit( UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
 
 	USphereComponent* GetCollisionComp() const
 	{

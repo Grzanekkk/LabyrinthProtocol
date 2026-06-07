@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "LabyrinthProtocolAmmoTypes.h"
 #include "LabyrinthProtocolWeaponComponent.generated.h"
 
 class ALabyrinthProtocolCharacter;
@@ -22,6 +23,12 @@ protected:
 	FOnAmmoChanged OnAmmoChanged;
 
 public:
+	UPROPERTY( EditDefaultsOnly, Category = "Weapon" )
+	FText WeaponDisplayName;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Weapon" )
+	ELabyrinthProtocolAmmoType AmmoType = ELabyrinthProtocolAmmoType::Rifle;
+
 	UPROPERTY( EditDefaultsOnly, Category = Projectile )
 	TSubclassOf< class ALabyrinthProtocolProjectile > ProjectileClass;
 
@@ -46,20 +53,87 @@ public:
 	UPROPERTY( Category = "Camera", EditAnywhere, BlueprintReadOnly )
 	FName MuzzleSocketName = "Muzzle";
 
-	UPROPERTY( Category = "Ammo", EditAnywhere, BlueprintReadOnly )
+	/** Maximum rounds held in the magazine. */
+	UPROPERTY( Category = "Ammo", EditAnywhere, BlueprintReadOnly, meta = ( ClampMin = "0", UIMin = "0" ) )
 	int32 MaxAmmo = 30;
 
-	UPROPERTY( Category = "Ammo", EditAnywhere, BlueprintReadOnly )
+	/** Rounds currently loaded in the magazine. */
+	UPROPERTY( Category = "Ammo", BlueprintReadOnly, VisibleAnywhere, meta = ( ClampMin = "0", UIMin = "0" ) )
 	int32 CurrentAmmo = 30;
 
+	/** Spare rounds carried outside the magazine. */
+	UPROPERTY( Category = "Ammo", BlueprintReadOnly, VisibleAnywhere, meta = ( ClampMin = "0", UIMin = "0" ) )
+	int32 ReserveAmmo = 90;
+
+	/** Maximum reserve capacity. 0 means unlimited reserve. */
+	UPROPERTY( Category = "Ammo", EditAnywhere, BlueprintReadOnly, meta = ( ClampMin = "0", UIMin = "0" ) )
+	int32 MaxReserveAmmo = 120;
+
 public:
+	ULabyrinthProtocolWeaponComponent();
+
 	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	bool AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter );
 
 	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	void Fire();
 
+	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	void Reload();
+
+	UFUNCTION( BlueprintCallable, Category = "Weapon|Ammo" )
+	bool AddReserveAmmo( int32 Amount );
+
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	int32 GetCurrentAmmo() const
+	{
+		return CurrentAmmo;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	int32 GetMaxAmmo() const
+	{
+		return MaxAmmo;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	int32 GetMagazineAmmo() const
+	{
+		return CurrentAmmo;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	int32 GetMaxMagazineAmmo() const
+	{
+		return MaxAmmo;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	int32 GetReserveAmmo() const
+	{
+		return ReserveAmmo;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	int32 GetMaxReserveAmmo() const
+	{
+		return MaxReserveAmmo;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	bool CanReload() const;
+
+	UFUNCTION( BlueprintPure, Category = "Weapon" )
+	FText GetWeaponDisplayName() const
+	{
+		return WeaponDisplayName;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Weapon" )
+	ELabyrinthProtocolAmmoType GetAmmoType() const
+	{
+		return AmmoType;
+	}
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "Weapon" )
 	void ProcessFiredBP();
@@ -67,13 +141,16 @@ public:
 	UFUNCTION( BlueprintImplementableEvent, Category = "Weapon" )
 	void ProcessReloadedBP();
 
-public:
-	ULabyrinthProtocolWeaponComponent();
-
 protected:
+	virtual void BeginPlay() override;
+
 	UFUNCTION()
 	virtual void EndPlay( const EEndPlayReason::Type EndPlayReason ) override;
 
+	virtual bool CanFire() const;
+	virtual void ConsumeAmmo();
+	virtual void PlayFireEffects();
+
 private:
-	ALabyrinthProtocolCharacter* Character;
+	ALabyrinthProtocolCharacter* Character = nullptr;
 };

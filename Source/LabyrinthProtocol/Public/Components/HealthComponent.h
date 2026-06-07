@@ -46,6 +46,24 @@ public:
 	UFUNCTION( BlueprintCallable )
 	void ApplyDamage( int32 const DeltaDamage );
 
+	UFUNCTION( BlueprintPure, Category = "Health" )
+	int32 GetCurrentHealth() const
+	{
+		return CurrentHealth;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Health" )
+	int32 GetMaxHealth() const
+	{
+		return MaxHealth;
+	}
+
+	UFUNCTION( BlueprintPure, Category = "Health" )
+	float GetHealthPercent() const
+	{
+		return MaxHealth > 0 ? static_cast< float >( CurrentHealth ) / static_cast< float >( MaxHealth ) : 0.0f;
+	}
+
 protected:
 	virtual void BeginPlay() override;
 };

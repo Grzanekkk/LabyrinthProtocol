@@ -34,18 +34,26 @@ ALabyrinthProtocolProjectile::ALabyrinthProtocolProjectile()
 
 void ALabyrinthProtocolProjectile::OnHit( UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit )
 {
-	if( IsValid( OtherActor ) && IsValid( OtherActor ) && IsValid( OtherComp ) )
+	if( !IsValid( OtherActor ) || !IsValid( OtherComp ) )
 	{
-		if( OtherComp->IsSimulatingPhysics() )
-		{
-			OtherComp->AddImpulseAtLocation( GetVelocity() * 100.0f, GetActorLocation() );
-			Destroy();
-		}
+		return;
+	}
 
-		UHealthComponent* const OtherHealthComponent = OtherActor->GetComponentByClass< UHealthComponent >();
-		if( IsValid( OtherHealthComponent ) )
-		{
-			OtherHealthComponent->AddHealth( -Damage );
-		}
+	if( OtherActor == GetInstigator() || OtherActor == GetOwner() )
+	{
+		return;
+	}
+
+	if( OtherComp->IsSimulatingPhysics() )
+	{
+		OtherComp->AddImpulseAtLocation( GetVelocity() * 100.0f, GetActorLocation() );
+		Destroy();
+		return;
+	}
+
+	if( UHealthComponent* const OtherHealthComponent = OtherActor->GetComponentByClass< UHealthComponent >() )
+	{
+		OtherHealthComponent->ApplyDamage( Damage );
+		Destroy();
 	}
 }
