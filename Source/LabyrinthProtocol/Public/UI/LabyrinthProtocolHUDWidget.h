@@ -21,36 +21,49 @@ public:
 	void ApplyHUDData( const FLabyrinthProtocolHUDViewData& HUDData );
 
 protected:
-	UPROPERTY( meta = ( BindWidgetOptional ) )
-	TObjectPtr< UTextBlock > HealthText;
+	virtual void NativeConstruct() override;
 
-	UPROPERTY( meta = ( BindWidgetOptional ) )
+	UPROPERTY(BlueprintReadWrite, meta = ( BindWidget ) )
+	TObjectPtr< UTextBlock > CurrentHealthWidget;
+
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
+	TObjectPtr< UTextBlock > MaxHealthWidget;
+
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
+	TObjectPtr< UTextBlock > CurrentAmmoWidget;
+
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
+	TObjectPtr< UTextBlock > MaxAmmoWidget;
+
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
 	TObjectPtr< UProgressBar > HealthBar;
 
-	UPROPERTY( meta = ( BindWidgetOptional ) )
-	TObjectPtr< UTextBlock > WeaponNameText;
-
-	UPROPERTY( meta = ( BindWidgetOptional ) )
-	TObjectPtr< UTextBlock > AmmoTypeText;
-
-	UPROPERTY( meta = ( BindWidgetOptional ) )
-	TObjectPtr< UTextBlock > AmmoText;
-
-	UPROPERTY( meta = ( BindWidgetOptional ) )
-	TObjectPtr< UTextBlock > MagazineAmmoText;
-
-	UPROPERTY( meta = ( BindWidgetOptional ) )
-	TObjectPtr< UTextBlock > ReserveAmmoText;
-
-	UPROPERTY( meta = ( BindWidgetOptional ) )
-	TObjectPtr< UImage > CrosshairImage;
-
-	UPROPERTY( meta = ( BindWidgetOptional ) )
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
 	TObjectPtr< UImage > DamageOverlay;
+
+	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "0.0", UIMin = "0.0" ) )
+	float DamageOverlayMaxAlpha = 0.45f;
+
+	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "0.1", UIMin = "0.1" ) )
+	float DamageOverlayFadeSpeed = 2.5f;
+
+	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "1.0", UIMin = "1.0" ) )
+	float DamageOverlayReferenceDamage = 30.0f;
+
+	void UpdateHealthBarVisuals( float HealthPercent );
+	void PlayDamageOverlay( int32 DamageAmount );
+	void UpdateDamageOverlayVisual() const;
+	void TickDamageOverlayFade();
+	void SetCounterText( UTextBlock* TextWidget, int32 Value, int32 FallbackValue = 0 ) const;
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "HUD" )
 	void OnHUDDataApplied( const FLabyrinthProtocolHUDViewData& HUDData );
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "HUD" )
 	void OnDamageTaken( int32 DamageAmount );
+
+private:
+	float DamageOverlayAlpha = 0.0f;
+
+	FTimerHandle DamageOverlayFadeTimerHandle;
 };

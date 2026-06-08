@@ -53,6 +53,18 @@ public:
 	UPROPERTY( Category = "Camera", EditAnywhere, BlueprintReadOnly )
 	FName MuzzleSocketName = "Muzzle";
 
+	UPROPERTY( EditDefaultsOnly, Category = "Weapon|Grip" )
+	FName GripSocketName = "GripPoint";
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon|Grip" )
+	FVector GripRelativeLocation = FVector::ZeroVector;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon|Grip" )
+	FRotator GripRelativeRotation = FRotator::ZeroRotator;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Weapon|Grip" )
+	FVector GripRelativeScale = FVector( 1.0f, 1.0f, 1.0f );
+
 	/** Maximum rounds held in the magazine. */
 	UPROPERTY( Category = "Ammo", EditAnywhere, BlueprintReadOnly, meta = ( ClampMin = "0", UIMin = "0" ) )
 	int32 MaxAmmo = 30;
@@ -74,6 +86,27 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	bool AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter );
+
+	UFUNCTION( BlueprintCallable, Category = "Weapon" )
+	void InitializeWeapon( ALabyrinthProtocolCharacter* TargetCharacter );
+
+	UFUNCTION( BlueprintCallable, Category = "Weapon|Grip" )
+	void ApplyGripTransform();
+
+	UFUNCTION( BlueprintCallable, Category = "Weapon" )
+	void SetWeaponEquipped( bool bEquipped, bool bEnableInput );
+
+	UFUNCTION( BlueprintCallable, Category = "Weapon" )
+	void EnableWeaponInput();
+
+	UFUNCTION( BlueprintCallable, Category = "Weapon" )
+	void DisableWeaponInput();
+
+	UFUNCTION( BlueprintPure, Category = "Weapon" )
+	bool IsWeaponEquipped() const
+	{
+		return bIsEquipped;
+	}
 
 	UFUNCTION( BlueprintCallable, Category = "Weapon" )
 	void Fire();
@@ -156,4 +189,12 @@ protected:
 
 private:
 	ALabyrinthProtocolCharacter* Character = nullptr;
+
+	bool bIsEquipped = false;
+
+	bool bInputBound = false;
+
+	uint32 FireInputBindingHandle = 0;
+
+	uint32 ReloadInputBindingHandle = 0;
 };

@@ -16,6 +16,9 @@ ULabyrinthProtocolWeaponComponent::ULabyrinthProtocolWeaponComponent()
 {
 	MuzzleOffset = FVector( 100.0f, 0.0f, 10.0f );
 	WeaponDisplayName = FText::FromString( TEXT( "Rifle" ) );
+	GripRelativeLocation = FVector( 0.0f, 17.0f, 10.0f );
+	GripRelativeRotation = FRotator( 0.0f, 180.0f, 0.0f );
+	GripRelativeScale = FVector( 0.01f, 0.01f, 0.01f );
 }
 
 void ULabyrinthProtocolWeaponComponent::BeginPlay()
@@ -163,49 +166,130 @@ FText ULabyrinthProtocolWeaponComponent::GetAmmoTypeDisplayName() const
 	return FText::GetEmpty();
 }
 
-bool ULabyrinthProtocolWeaponComponent::AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter )
+void ULabyrinthProtocolWeaponComponent::InitializeWeapon( ALabyrinthProtocolCharacter* TargetCharacter )
 {
 	Character = TargetCharacter;
+	if( Character == nullptr )
+	{
+		return;
+	}
 
-	if( Character == nullptr || Character->GetInstanceComponents().FindItemByClass< ULabyrinthProtocolWeaponComponent >() )
+	FAttachmentTransformRules AttachmentRules( EAttachmentRule::SnapToTarget, true );
+	AttachToComponent( Character->GetMesh1P(), AttachmentRules, GripSocketName );
+	ApplyGripTransform();
+}
+
+void ULabyrinthProtocolWeaponComponent::ApplyGripTransform()
+{
+	SetRelativeLocation( GripRelativeLocation );
+	SetRelativeRotation( GripRelativeRotation );
+	SetRelativeScale3D( GripRelativeScale );
+}
+
+void ULabyrinthProtocolWeaponComponent::SetWeaponEquipped( bool bEquipped, bool bEnableInput )
+{
+	bIsEquipped = bEquipped;
+	SetHiddenInGame( !bEquipped, true );
+	SetVisibility( bEquipped, true );
+
+	if( bEquipped && bEnableInput )
+	{
+		EnableWeaponInput();
+	}
+	else
+	{
+		DisableWeaponInput();
+	}
+}
+
+void ULabyrinthProtocolWeaponComponent::EnableWeaponInput()
+{
+	if( bInputBound || Character == nullptr )
+	{
+		return;
+	}
+
+	APlayerController* const PlayerController = Cast< APlayerController >( Character->GetController() );
+	if( PlayerController == nullptr )
+	{
+		return;
+	}
+
+	if( UEnhancedInputLocalPlayerSubsystem* const Subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem >( PlayerController->GetLocalPlayer() ) )
+	{
+		if( FireMappingContext != nullptr )
+		{
+			Subsystem->AddMappingContext( FireMappingContext, 1 );
+		}
+	}
+
+	if( UEnhancedInputComponent* const EnhancedInputComponent = Cast< UEnhancedInputComponent >( PlayerController->InputComponent ) )
+	{
+		if( FireAction != nullptr )
+		{
+			FireInputBindingHandle = EnhancedInputComponent->BindAction( FireAction, ETriggerEvent::Triggered, this, &ULabyrinthProtocolWeaponComponent::Fire ).GetHandle();
+		}
+
+		if( ReloadAction != nullptr )
+		{
+			ReloadInputBindingHandle = EnhancedInputComponent->BindAction( ReloadAction, ETriggerEvent::Triggered, this, &ULabyrinthProtocolWeaponComponent::Reload ).GetHandle();
+		}
+	}
+
+	bInputBound = true;
+}
+
+void ULabyrinthProtocolWeaponComponent::DisableWeaponInput()
+{
+	if( Character == nullptr )
+	{
+		return;
+	}
+
+	if( APlayerController* const PlayerController = Cast< APlayerController >( Character->GetController() ) )
+	{
+		if( UEnhancedInputLocalPlayerSubsystem* const Subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem >( PlayerController->GetLocalPlayer() ) )
+		{
+			if( FireMappingContext != nullptr )
+			{
+				Subsystem->RemoveMappingContext( FireMappingContext );
+			}
+		}
+
+		if( UEnhancedInputComponent* const EnhancedInputComponent = Cast< UEnhancedInputComponent >( PlayerController->InputComponent ) )
+		{
+			if( FireInputBindingHandle != 0 )
+			{
+				EnhancedInputComponent->RemoveBindingByHandle( FireInputBindingHandle );
+				FireInputBindingHandle = 0;
+			}
+
+			if( ReloadInputBindingHandle != 0 )
+			{
+				EnhancedInputComponent->RemoveBindingByHandle( ReloadInputBindingHandle );
+				ReloadInputBindingHandle = 0;
+			}
+		}
+	}
+
+	bInputBound = false;
+}
+
+bool ULabyrinthProtocolWeaponComponent::AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter )
+{
+	InitializeWeapon( TargetCharacter );
+	if( Character == nullptr )
 	{
 		return false;
 	}
 
-	FAttachmentTransformRules AttachmentRules( EAttachmentRule::SnapToTarget, true );
-	AttachToComponent( Character->GetMesh1P(), AttachmentRules, FName( TEXT( "GripPoint" ) ) );
-
-	if( APlayerController* PlayerController = Cast< APlayerController >( Character->GetController() ) )
-	{
-		if( UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem >( PlayerController->GetLocalPlayer() ) )
-		{
-			Subsystem->AddMappingContext( FireMappingContext, 1 );
-		}
-
-		if( UEnhancedInputComponent* EnhancedInputComponent = Cast< UEnhancedInputComponent >( PlayerController->InputComponent ) )
-		{
-			EnhancedInputComponent->BindAction( FireAction, ETriggerEvent::Triggered, this, &ULabyrinthProtocolWeaponComponent::Fire );
-			EnhancedInputComponent->BindAction( ReloadAction, ETriggerEvent::Triggered, this, &ULabyrinthProtocolWeaponComponent::Reload );
-		}
-	}
-
+	SetWeaponEquipped( true, true );
 	Character->RegisterTrackedWeapon( this );
-
 	return true;
 }
 
 void ULabyrinthProtocolWeaponComponent::EndPlay( const EEndPlayReason::Type EndPlayReason )
 {
-	if( Character != nullptr )
-	{
-		if( APlayerController* PlayerController = Cast< APlayerController >( Character->GetController() ) )
-		{
-			if( UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem >( PlayerController->GetLocalPlayer() ) )
-			{
-				Subsystem->RemoveMappingContext( FireMappingContext );
-			}
-		}
-	}
-
+	DisableWeaponInput();
 	Super::EndPlay( EndPlayReason );
 }

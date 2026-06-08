@@ -2,9 +2,8 @@
 
 #include "LabyrinthProtocolCharacter.h"
 #include "LabyrinthProtocolWeaponComponent.h"
-#include "LabyrinthProtocolProjectile.h"
+#include "Components/WeaponInventoryComponent.h"
 #include "Components/HealthComponent.h"
-#include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -14,23 +13,25 @@
 #include "Engine/LocalPlayer.h"
 #include "TimerManager.h"
 
-DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+DEFINE_LOG_CATEGORY( LogTemplateCharacter );
 
 ALabyrinthProtocolCharacter::ALabyrinthProtocolCharacter()
 {
-	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-		
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f));
+	GetCapsuleComponent()->InitCapsuleSize( 55.f, 96.0f );
+
+	FirstPersonCameraComponent = CreateDefaultSubobject< UCameraComponent >( TEXT( "FirstPersonCamera" ) );
+	FirstPersonCameraComponent->SetupAttachment( GetCapsuleComponent() );
+	FirstPersonCameraComponent->SetRelativeLocation( FVector( -10.f, 0.f, 60.f ) );
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
-	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
+	Mesh1P = CreateDefaultSubobject< USkeletalMeshComponent >( TEXT( "CharacterMesh1P" ) );
+	Mesh1P->SetOnlyOwnerSee( true );
+	Mesh1P->SetupAttachment( FirstPersonCameraComponent );
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
-	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
+	Mesh1P->SetRelativeLocation( FVector( -30.f, 0.f, -150.f ) );
+
+	WeaponInventoryComponent = CreateDefaultSubobject< UWeaponInventoryComponent >( TEXT( "WeaponInventory" ) );
 }
 
 void ALabyrinthProtocolCharacter::BeginPlay()
@@ -38,18 +39,22 @@ void ALabyrinthProtocolCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	BindHealthComponent( GetHealthComponent() );
-	TryBindWeaponComponent();
 
-	if( GetWorld() != nullptr )
+	if( WeaponInventoryComponent == nullptr )
 	{
-		GetWorld()->GetTimerManager().SetTimer(
-			WeaponBindingRetryTimerHandle,
-			this,
-			&ALabyrinthProtocolCharacter::RetryWeaponBinding,
-			0.1f,
-			true,
-			0.1f
-		);
+		TryBindWeaponComponent();
+
+		if( GetWorld() != nullptr )
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				WeaponBindingRetryTimerHandle,
+				this,
+				&ALabyrinthProtocolCharacter::RetryWeaponBinding,
+				0.1f,
+				true,
+				0.1f
+			);
+		}
 	}
 
 	BroadcastHUDUpdate();
@@ -59,58 +64,124 @@ void ALabyrinthProtocolCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if( APlayerController* PlayerController = Cast< APlayerController >( Controller ) )
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if( UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem >( PlayerController->GetLocalPlayer() ) )
 		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			Subsystem->AddMappingContext( DefaultMappingContext, 0 );
 		}
 	}
 
+	RefreshActiveWeaponInput();
 	InitializeHUDBindings();
 }
 
-void ALabyrinthProtocolCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{	
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+void ALabyrinthProtocolCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputComponent )
+{
+	if( UEnhancedInputComponent* EnhancedInputComponent = Cast< UEnhancedInputComponent >( PlayerInputComponent ) )
 	{
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ALabyrinthProtocolCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ALabyrinthProtocolCharacter::Look);
+		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump );
+		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping );
+		EnhancedInputComponent->BindAction( MoveAction, ETriggerEvent::Triggered, this, &ALabyrinthProtocolCharacter::Move );
+		EnhancedInputComponent->BindAction( LookAction, ETriggerEvent::Triggered, this, &ALabyrinthProtocolCharacter::Look );
+
+		if( WeaponSlot1Action != nullptr )
+		{
+			EnhancedInputComponent->BindAction( WeaponSlot1Action, ETriggerEvent::Started, this, &ALabyrinthProtocolCharacter::SelectWeaponSlot1 );
+		}
+
+		if( WeaponSlot2Action != nullptr )
+		{
+			EnhancedInputComponent->BindAction( WeaponSlot2Action, ETriggerEvent::Started, this, &ALabyrinthProtocolCharacter::SelectWeaponSlot2 );
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG( LogTemplateCharacter, Error, TEXT( "'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file." ), *GetNameSafe( this ) );
 	}
 }
 
-void ALabyrinthProtocolCharacter::Move(const FInputActionValue& Value)
+void ALabyrinthProtocolCharacter::Move( const FInputActionValue& Value )
 {
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get< FVector2D >();
 
-	if (Controller != nullptr)
+	if( Controller != nullptr )
 	{
-		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-		AddMovementInput(GetActorRightVector(), MovementVector.X);
+		AddMovementInput( GetActorForwardVector(), MovementVector.Y );
+		AddMovementInput( GetActorRightVector(), MovementVector.X );
 	}
 }
 
-void ALabyrinthProtocolCharacter::Look(const FInputActionValue& Value)
+void ALabyrinthProtocolCharacter::Look( const FInputActionValue& Value )
 {
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	const FVector2D LookAxisVector = Value.Get< FVector2D >();
 
-	if (Controller != nullptr)
+	if( Controller != nullptr )
 	{
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		AddControllerYawInput( LookAxisVector.X );
+		AddControllerPitchInput( LookAxisVector.Y );
+	}
+}
+
+void ALabyrinthProtocolCharacter::SelectWeaponSlot1()
+{
+	if( WeaponInventoryComponent != nullptr )
+	{
+		WeaponInventoryComponent->EquipWeaponSlot1();
+	}
+}
+
+void ALabyrinthProtocolCharacter::SelectWeaponSlot2()
+{
+	if( WeaponInventoryComponent != nullptr )
+	{
+		WeaponInventoryComponent->EquipWeaponSlot2();
+	}
+}
+
+void ALabyrinthProtocolCharacter::RefreshActiveWeaponInput()
+{
+	if( WeaponInventoryComponent == nullptr )
+	{
+		return;
+	}
+
+	TArray< ULabyrinthProtocolWeaponComponent* > WeaponComponents;
+	GetComponents< ULabyrinthProtocolWeaponComponent >( WeaponComponents );
+	for( ULabyrinthProtocolWeaponComponent* WeaponComponent : WeaponComponents )
+	{
+		if( WeaponComponent != nullptr )
+		{
+			WeaponComponent->DisableWeaponInput();
+		}
+	}
+
+	if( ULabyrinthProtocolWeaponComponent* ActiveWeapon = GetWeaponComponent() )
+	{
+		ActiveWeapon->EnableWeaponInput();
 	}
 }
 
 ULabyrinthProtocolWeaponComponent* ALabyrinthProtocolCharacter::GetWeaponComponent() const
 {
+	if( WeaponInventoryComponent != nullptr )
+	{
+		if( ULabyrinthProtocolWeaponComponent* ActiveWeapon = WeaponInventoryComponent->GetActiveWeapon() )
+		{
+			return ActiveWeapon;
+		}
+	}
+
 	TArray< ULabyrinthProtocolWeaponComponent* > WeaponComponents;
 	GetComponents< ULabyrinthProtocolWeaponComponent >( WeaponComponents );
+
+	for( ULabyrinthProtocolWeaponComponent* WeaponComponent : WeaponComponents )
+	{
+		if( WeaponComponent != nullptr && WeaponComponent->IsWeaponEquipped() )
+		{
+			return WeaponComponent;
+		}
+	}
 
 	for( ULabyrinthProtocolWeaponComponent* WeaponComponent : WeaponComponents )
 	{
@@ -132,6 +203,8 @@ FLabyrinthProtocolHUDViewData ALabyrinthProtocolCharacter::BuildHUDViewData() co
 {
 	FLabyrinthProtocolHUDViewData HUDData;
 	HUDData.HealthDelta = LastHUDHealthDelta;
+	HUDData.bTookDamage = PendingHUDDamageAmount > 0;
+	HUDData.DamageTakenAmount = PendingHUDDamageAmount;
 
 	if( const UHealthComponent* HealthComponent = GetHealthComponent() )
 	{
@@ -162,13 +235,18 @@ FLabyrinthProtocolHUDViewData ALabyrinthProtocolCharacter::BuildHUDViewData() co
 		) );
 	}
 
+	if( WeaponInventoryComponent != nullptr )
+	{
+		HUDData.ActiveWeaponSlotIndex = WeaponInventoryComponent->GetActiveWeaponSlotIndex();
+	}
+
 	return HUDData;
 }
 
 void ALabyrinthProtocolCharacter::InitializeHUDBindings()
 {
 	BindHealthComponent( GetHealthComponent() );
-	TryBindWeaponComponent();
+	BindTrackedWeapon( GetWeaponComponent() );
 	BroadcastHUDUpdate();
 }
 
@@ -271,8 +349,15 @@ void ALabyrinthProtocolCharacter::RetryWeaponBinding()
 void ALabyrinthProtocolCharacter::HandleHealthChanged( UHealthComponent* const HealthComponent, int32 CurrentHealth, int32 HealthDelta )
 {
 	LastHUDHealthDelta = HealthDelta;
+	if( HealthDelta < 0 )
+	{
+		PendingHUDDamageAmount = FMath::Abs( HealthDelta );
+	}
+
 	BroadcastHUDUpdate();
+
 	LastHUDHealthDelta = 0;
+	PendingHUDDamageAmount = 0;
 }
 
 void ALabyrinthProtocolCharacter::HandleWeaponAmmoChanged( ULabyrinthProtocolWeaponComponent* Weapon )
@@ -311,4 +396,3 @@ bool ALabyrinthProtocolCharacter::TryAddReserveAmmo( ELabyrinthProtocolAmmoType 
 
 	return bAmmoAdded;
 }
-

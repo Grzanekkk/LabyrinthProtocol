@@ -13,4 +13,7 @@ ULabyrinthProtocolGrenadeLauncherComponent::ULabyrinthProtocolGrenadeLauncherCom
 	MaxReserveAmmo = 8;
 	ProjectileClass = ALabyrinthProtocolGrenadeProjectile::StaticClass();
 	MuzzleOffset = FVector( 80.0f, 0.0f, 0.0f );
+	GripRelativeLocation = FVector( 0.0f, 17.0f, 10.0f );
+	GripRelativeRotation = FRotator( 0.0f, 90.0f, 0.0f );
+	GripRelativeScale = FVector( 10.0f, 10.0f, 10.0f );
 }

@@ -4,71 +4,141 @@
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "TimerManager.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
+
+namespace
+{
+	UWorld* GetWidgetWorld( const UUserWidget* Widget )
+	{
+		if( Widget == nullptr )
+		{
+			return nullptr;
+		}
+
+		if( UWorld* World = Widget->GetWorld() )
+		{
+			return World;
+		}
+
+		if( APlayerController* PlayerController = Widget->GetOwningPlayer() )
+		{
+			return PlayerController->GetWorld();
+		}
+
+		return nullptr;
+	}
+}
+
+void ULabyrinthProtocolHUDWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	DamageOverlayAlpha = 0.0f;
+	UpdateDamageOverlayVisual();
+}
+
+void ULabyrinthProtocolHUDWidget::TickDamageOverlayFade()
+{
+	UWorld* const World = GetWidgetWorld( this );
+	if( World == nullptr )
+	{
+		return;
+	}
+
+	const float DeltaTime = World->GetDeltaSeconds();
+	DamageOverlayAlpha = FMath::Max( 0.0f, DamageOverlayAlpha - ( DamageOverlayFadeSpeed * DeltaTime ) );
+	UpdateDamageOverlayVisual();
+
+	if( DamageOverlayAlpha <= KINDA_SMALL_NUMBER )
+	{
+		World->GetTimerManager().ClearTimer( DamageOverlayFadeTimerHandle );
+	}
+}
 
 void ULabyrinthProtocolHUDWidget::ApplyHUDData( const FLabyrinthProtocolHUDViewData& HUDData )
 {
-	if( HealthText != nullptr )
+	SetCounterText( CurrentHealthWidget, HUDData.CurrentHealth );
+	SetCounterText( MaxHealthWidget, HUDData.MaxHealth );
+
+	const float ClampedHealthPercent = FMath::Clamp( HUDData.HealthPercent, 0.0f, 1.0f );
+	HealthBar->SetPercent( ClampedHealthPercent );
+	UpdateHealthBarVisuals( ClampedHealthPercent );
+
+	if( HUDData.bHasWeapon )
 	{
-		HealthText->SetText( FText::FromString( FString::Printf( TEXT( "HP %d / %d" ), HUDData.CurrentHealth, HUDData.MaxHealth ) ) );
+		SetCounterText( CurrentAmmoWidget, HUDData.MagazineAmmo );
+		SetCounterText( MaxAmmoWidget, HUDData.MaxMagazineAmmo );
+	}
+	else
+	{
+		SetCounterText( CurrentAmmoWidget, 0 );
+		SetCounterText( MaxAmmoWidget, 0 );
 	}
 
-	if( HealthBar != nullptr )
+	if( HUDData.bTookDamage && HUDData.DamageTakenAmount > 0 )
 	{
-		HealthBar->SetPercent( FMath::Clamp( HUDData.HealthPercent, 0.0f, 1.0f ) );
+		PlayDamageOverlay( HUDData.DamageTakenAmount );
+		OnDamageTaken( HUDData.DamageTakenAmount );
 	}
-
-	if( WeaponNameText != nullptr )
+	else if( HUDData.HealthDelta < 0 )
 	{
-		WeaponNameText->SetText( HUDData.bHasWeapon ? HUDData.WeaponName : FText::FromString( TEXT( "No Weapon" ) ) );
-	}
-
-	if( AmmoTypeText != nullptr )
-	{
-		if( HUDData.bHasWeapon )
-		{
-			AmmoTypeText->SetText( HUDData.AmmoTypeName );
-			AmmoTypeText->SetVisibility( ESlateVisibility::Visible );
-		}
-		else
-		{
-			AmmoTypeText->SetVisibility( ESlateVisibility::Collapsed );
-		}
-	}
-
-	if( MagazineAmmoText != nullptr )
-	{
-		MagazineAmmoText->SetText( HUDData.MagazineAmmoLabel );
-	}
-
-	if( ReserveAmmoText != nullptr )
-	{
-		ReserveAmmoText->SetText( HUDData.ReserveAmmoLabel );
-	}
-
-	if( AmmoText != nullptr )
-	{
-		if( HUDData.bHasWeapon )
-		{
-			const FString ReloadHint = HUDData.bCanReload ? TEXT( "  [R]" ) : TEXT( "" );
-			AmmoText->SetText( FText::FromString( FString::Printf(
-				TEXT( "Mag %d/%d  |  Res %d/%d%s" ),
-				HUDData.MagazineAmmo,
-				HUDData.MaxMagazineAmmo,
-				HUDData.ReserveAmmo,
-				HUDData.MaxReserveAmmo,
-				*ReloadHint
-			) ) );
-		}
-		else
-		{
-			AmmoText->SetText( FText::FromString( TEXT( "-- / --" ) ) );
-		}
-	}
-
-	if( HUDData.HealthDelta < 0 )
-	{
-		OnDamageTaken( FMath::Abs( HUDData.HealthDelta ) );
+		const int32 DamageAmount = FMath::Abs( HUDData.HealthDelta );
+		PlayDamageOverlay( DamageAmount );
+		OnDamageTaken( DamageAmount );
 	}
 
 	OnHUDDataApplied( HUDData );
+}
+
+void ULabyrinthProtocolHUDWidget::SetCounterText( UTextBlock* TextWidget, int32 Value, int32 FallbackValue ) const
+{
+	TextWidget->SetText( FText::AsNumber( Value >= 0 ? Value : FallbackValue ) );
+}
+
+void ULabyrinthProtocolHUDWidget::UpdateHealthBarVisuals( float HealthPercent )
+{
+	const FLinearColor FullHealthColor( 0.1f, 0.85f, 0.2f, 1.0f );
+	const FLinearColor LowHealthColor( 0.9f, 0.1f, 0.05f, 1.0f );
+	const FLinearColor HealthBarColor = FMath::Lerp( LowHealthColor, FullHealthColor, HealthPercent );
+
+	HealthBar->SetFillColorAndOpacity( HealthBarColor );
+}
+
+void ULabyrinthProtocolHUDWidget::PlayDamageOverlay( int32 DamageAmount )
+{
+	const float DamageIntensity = FMath::Clamp(
+		static_cast< float >( DamageAmount ) / DamageOverlayReferenceDamage,
+		0.25f,
+		1.0f
+	);
+
+	DamageOverlayAlpha = FMath::Max( DamageOverlayAlpha, DamageOverlayMaxAlpha * DamageIntensity );
+	UpdateDamageOverlayVisual();
+
+	UWorld* const World = GetWidgetWorld( this );
+	if( World != nullptr )
+	{
+		World->GetTimerManager().SetTimer(
+			DamageOverlayFadeTimerHandle,
+			this,
+			&ULabyrinthProtocolHUDWidget::TickDamageOverlayFade,
+			0.016f,
+			true
+		);
+	}
+}
+
+void ULabyrinthProtocolHUDWidget::UpdateDamageOverlayVisual() const
+{
+	if( DamageOverlayAlpha <= KINDA_SMALL_NUMBER )
+	{
+		DamageOverlay->SetVisibility( ESlateVisibility::Collapsed );
+		DamageOverlay->SetColorAndOpacity( FLinearColor( 0.85f, 0.0f, 0.0f, 0.0f ) );
+		return;
+	}
+
+	DamageOverlay->SetVisibility( ESlateVisibility::HitTestInvisible );
+	DamageOverlay->SetColorAndOpacity( FLinearColor( 0.85f, 0.0f, 0.0f, DamageOverlayAlpha ) );
 }

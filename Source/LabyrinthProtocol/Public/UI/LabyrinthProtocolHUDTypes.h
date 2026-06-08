@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "LabyrinthProtocolAmmoTypes.h"
+#include "LabyrinthProtocol/LabyrinthProtocolAmmoTypes.h"
 #include "LabyrinthProtocolHUDTypes.generated.h"
 
 USTRUCT( BlueprintType )
@@ -55,4 +55,13 @@ struct FLabyrinthProtocolHUDViewData
 
 	UPROPERTY( BlueprintReadOnly, Category = "HUD" )
 	FText ReserveAmmoLabel;
+
+	UPROPERTY( BlueprintReadOnly, Category = "HUD" )
+	bool bTookDamage = false;
+
+	UPROPERTY( BlueprintReadOnly, Category = "HUD" )
+	int32 DamageTakenAmount = 0;
+
+	UPROPERTY( BlueprintReadOnly, Category = "HUD" )
+	int32 ActiveWeaponSlotIndex = INDEX_NONE;
 };
