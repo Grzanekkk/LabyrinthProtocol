@@ -131,20 +131,35 @@ UHealthComponent* ALabyrinthProtocolCharacter::GetHealthComponent() const
 FLabyrinthProtocolHUDViewData ALabyrinthProtocolCharacter::BuildHUDViewData() const
 {
 	FLabyrinthProtocolHUDViewData HUDData;
+	HUDData.HealthDelta = LastHUDHealthDelta;
 
 	if( const UHealthComponent* HealthComponent = GetHealthComponent() )
 	{
 		HUDData.CurrentHealth = HealthComponent->GetCurrentHealth();
 		HUDData.MaxHealth = HealthComponent->GetMaxHealth();
+		HUDData.HealthPercent = HealthComponent->GetHealthPercent();
 	}
 
 	if( const ULabyrinthProtocolWeaponComponent* WeaponComponent = GetWeaponComponent() )
 	{
 		HUDData.bHasWeapon = true;
 		HUDData.WeaponName = WeaponComponent->GetWeaponDisplayName();
+		HUDData.AmmoType = WeaponComponent->GetAmmoType();
+		HUDData.AmmoTypeName = WeaponComponent->GetAmmoTypeDisplayName();
 		HUDData.MagazineAmmo = WeaponComponent->GetMagazineAmmo();
 		HUDData.MaxMagazineAmmo = WeaponComponent->GetMaxMagazineAmmo();
 		HUDData.ReserveAmmo = WeaponComponent->GetReserveAmmo();
+		HUDData.MaxReserveAmmo = WeaponComponent->GetMaxReserveAmmo();
+		HUDData.bCanReload = WeaponComponent->CanReload();
+		HUDData.MagazineAmmoLabel = FText::FromString( FString::Printf(
+			TEXT( "%d / %d" ),
+			HUDData.MagazineAmmo,
+			HUDData.MaxMagazineAmmo
+		) );
+		HUDData.ReserveAmmoLabel = FText::FromString( FString::Printf(
+			TEXT( "Reserve: %d" ),
+			HUDData.ReserveAmmo
+		) );
 	}
 
 	return HUDData;
@@ -255,7 +270,9 @@ void ALabyrinthProtocolCharacter::RetryWeaponBinding()
 
 void ALabyrinthProtocolCharacter::HandleHealthChanged( UHealthComponent* const HealthComponent, int32 CurrentHealth, int32 HealthDelta )
 {
+	LastHUDHealthDelta = HealthDelta;
 	BroadcastHUDUpdate();
+	LastHUDHealthDelta = 0;
 }
 
 void ALabyrinthProtocolCharacter::HandleWeaponAmmoChanged( ULabyrinthProtocolWeaponComponent* Weapon )
@@ -294,4 +311,4 @@ bool ALabyrinthProtocolCharacter::TryAddReserveAmmo( ELabyrinthProtocolAmmoType 
 
 	return bAmmoAdded;
 }
-
+

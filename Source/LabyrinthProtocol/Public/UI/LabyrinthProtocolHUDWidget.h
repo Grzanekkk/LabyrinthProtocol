@@ -9,6 +9,7 @@
 
 class UTextBlock;
 class UProgressBar;
+class UImage;
 
 UCLASS()
 class LABYRINTHPROTOCOL_API ULabyrinthProtocolHUDWidget : public UUserWidget
@@ -30,8 +31,26 @@ protected:
 	TObjectPtr< UTextBlock > WeaponNameText;
 
 	UPROPERTY( meta = ( BindWidgetOptional ) )
+	TObjectPtr< UTextBlock > AmmoTypeText;
+
+	UPROPERTY( meta = ( BindWidgetOptional ) )
 	TObjectPtr< UTextBlock > AmmoText;
+
+	UPROPERTY( meta = ( BindWidgetOptional ) )
+	TObjectPtr< UTextBlock > MagazineAmmoText;
+
+	UPROPERTY( meta = ( BindWidgetOptional ) )
+	TObjectPtr< UTextBlock > ReserveAmmoText;
+
+	UPROPERTY( meta = ( BindWidgetOptional ) )
+	TObjectPtr< UImage > CrosshairImage;
+
+	UPROPERTY( meta = ( BindWidgetOptional ) )
+	TObjectPtr< UImage > DamageOverlay;
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "HUD" )
 	void OnHUDDataApplied( const FLabyrinthProtocolHUDViewData& HUDData );
+
+	UFUNCTION( BlueprintImplementableEvent, Category = "HUD" )
+	void OnDamageTaken( int32 DamageAmount );
 };

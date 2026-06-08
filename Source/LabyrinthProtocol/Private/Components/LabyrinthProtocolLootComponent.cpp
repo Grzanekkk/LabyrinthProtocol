@@ -2,8 +2,8 @@
 
 #include "Components/LabyrinthProtocolLootComponent.h"
 #include "Components/HealthComponent.h"
-#include "LabyrinthProtocolHealthPickup.h"
-#include "LabyrinthProtocolAmmoPickup.h"
+#include "LabyrinthProtocol/LabyrinthProtocolHealthPickup.h"
+#include "LabyrinthProtocol/LabyrinthProtocolAmmoPickup.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 

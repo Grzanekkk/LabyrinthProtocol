@@ -152,6 +152,17 @@ bool ULabyrinthProtocolWeaponComponent::CanReload() const
 	return CurrentAmmo < MaxAmmo && ReserveAmmo > 0;
 }
 
+FText ULabyrinthProtocolWeaponComponent::GetAmmoTypeDisplayName() const
+{
+	const UEnum* const AmmoTypeEnum = StaticEnum< ELabyrinthProtocolAmmoType >();
+	if( AmmoTypeEnum != nullptr )
+	{
+		return AmmoTypeEnum->GetDisplayNameTextByValue( static_cast< int64 >( AmmoType ) );
+	}
+
+	return FText::GetEmpty();
+}
+
 bool ULabyrinthProtocolWeaponComponent::AttachWeapon( ALabyrinthProtocolCharacter* TargetCharacter )
 {
 	Character = TargetCharacter;

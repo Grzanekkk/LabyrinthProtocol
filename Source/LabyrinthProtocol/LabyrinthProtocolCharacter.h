@@ -240,6 +240,7 @@ private:
 
 	FTimerHandle WeaponBindingRetryTimerHandle;
 
+	int32 LastHUDHealthDelta = 0;
 };
 
 

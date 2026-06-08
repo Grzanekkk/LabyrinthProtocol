@@ -4,6 +4,8 @@
 #include "LabyrinthProtocolCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundAttenuation.h"
 
 ALabyrinthProtocolPickupBase::ALabyrinthProtocolPickupBase()
 {
@@ -52,9 +54,14 @@ void ALabyrinthProtocolPickupBase::OnPickupOverlap( UPrimitiveComponent* Overlap
 	if( TryApplyPickup( Character ) )
 	{
 		bWasCollected = true;
+		PlayPickupSound( Character );
 		OnPickupCollected( Character );
 		OnCollectedBP( Character );
 		Destroy();
+	}
+	else
+	{
+		PlayPickupDeniedSound( Character );
 	}
 }
 
@@ -65,4 +72,48 @@ bool ALabyrinthProtocolPickupBase::TryApplyPickup( ALabyrinthProtocolCharacter* 
 
 void ALabyrinthProtocolPickupBase::OnPickupCollected( ALabyrinthProtocolCharacter* Character )
 {
+}
+
+void ALabyrinthProtocolPickupBase::PlayPickupSound( ALabyrinthProtocolCharacter* Character ) const
+{
+	if( PickupSound == nullptr )
+	{
+		return;
+	}
+
+	const FVector SoundLocation = bPlayPickupSoundAtCharacter && Character != nullptr
+		? Character->GetActorLocation()
+		: GetActorLocation();
+
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		PickupSound,
+		SoundLocation,
+		PickupSoundVolume,
+		1.0f,
+		0.0f,
+		PickupSoundAttenuation
+	);
+}
+
+void ALabyrinthProtocolPickupBase::PlayPickupDeniedSound( ALabyrinthProtocolCharacter* Character ) const
+{
+	if( PickupDeniedSound == nullptr )
+	{
+		return;
+	}
+
+	const FVector SoundLocation = bPlayPickupSoundAtCharacter && Character != nullptr
+		? Character->GetActorLocation()
+		: GetActorLocation();
+
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		PickupDeniedSound,
+		SoundLocation,
+		PickupSoundVolume,
+		1.0f,
+		0.0f,
+		PickupSoundAttenuation
+	);
 }

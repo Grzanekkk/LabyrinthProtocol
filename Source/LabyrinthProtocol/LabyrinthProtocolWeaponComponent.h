@@ -135,6 +135,9 @@ public:
 		return AmmoType;
 	}
 
+	UFUNCTION( BlueprintPure, Category = "Weapon" )
+	FText GetAmmoTypeDisplayName() const;
+
 	UFUNCTION( BlueprintImplementableEvent, Category = "Weapon" )
 	void ProcessFiredBP();
 
