@@ -10,8 +10,9 @@
 class UTextBlock;
 class UProgressBar;
 class UImage;
+class ALabyrinthProtocolCharacter;
 
-UCLASS()
+UCLASS( Blueprintable )
 class LABYRINTHPROTOCOL_API ULabyrinthProtocolHUDWidget : public UUserWidget
 {
 	GENERATED_BODY()
@@ -20,8 +21,12 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "HUD" )
 	void ApplyHUDData( const FLabyrinthProtocolHUDViewData& HUDData );
 
+	UFUNCTION( BlueprintCallable, Category = "HUD" )
+	void BindToPlayerCharacter();
+
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	UPROPERTY(BlueprintReadWrite, meta = ( BindWidget ) )
 	TObjectPtr< UTextBlock > CurrentHealthWidget;
@@ -35,10 +40,13 @@ protected:
 	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
 	TObjectPtr< UTextBlock > MaxAmmoWidget;
 
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidgetOptional ) )
+	TObjectPtr< UTextBlock > ReserveAmmoWidget;
+
 	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
 	TObjectPtr< UProgressBar > HealthBar;
 
-	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget) )
 	TObjectPtr< UImage > DamageOverlay;
 
 	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "0.0", UIMin = "0.0" ) )
@@ -55,6 +63,10 @@ protected:
 	void UpdateDamageOverlayVisual() const;
 	void TickDamageOverlayFade();
 	void SetCounterText( UTextBlock* TextWidget, int32 Value, int32 FallbackValue = 0 ) const;
+	void UnbindFromCharacter();
+
+	UFUNCTION()
+	void HandleHUDDataChanged( FLabyrinthProtocolHUDViewData HUDData );
 
 	UFUNCTION( BlueprintImplementableEvent, Category = "HUD" )
 	void OnHUDDataApplied( const FLabyrinthProtocolHUDViewData& HUDData );
@@ -63,7 +75,12 @@ protected:
 	void OnDamageTaken( int32 DamageAmount );
 
 private:
+	UPROPERTY()
+	TObjectPtr< ALabyrinthProtocolCharacter > BoundCharacter;
+
 	float DamageOverlayAlpha = 0.0f;
 
 	FTimerHandle DamageOverlayFadeTimerHandle;
+
+	FTimerHandle CharacterBindingRetryTimerHandle;
 };

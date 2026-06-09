@@ -3,7 +3,6 @@
 #include "LabyrinthProtocolPlayerController.h"
 #include "LabyrinthProtocolCharacter.h"
 #include "UI/LabyrinthProtocolHUDWidget.h"
-#include "UI/LabyrinthProtocolHUDTypes.h"
 #include "Blueprint/UserWidget.h"
 
 ALabyrinthProtocolPlayerController::ALabyrinthProtocolPlayerController()
@@ -11,62 +10,47 @@ ALabyrinthProtocolPlayerController::ALabyrinthProtocolPlayerController()
 	bShowMouseCursor = false;
 }
 
+void ALabyrinthProtocolPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if( IsLocalPlayerController() )
+	{
+		CreateHUDWidget();
+	}
+}
+
 void ALabyrinthProtocolPlayerController::OnPossess( APawn* InPawn )
 {
 	Super::OnPossess( InPawn );
 
-	if( HUDWidgetClass != nullptr && HUDWidget == nullptr && IsLocalPlayerController() )
+	if( IsLocalPlayerController() && HUDWidget == nullptr )
 	{
-		HUDWidget = CreateWidget< ULabyrinthProtocolHUDWidget >( this, HUDWidgetClass );
-		if( HUDWidget != nullptr )
-		{
-			HUDWidget->AddToViewport();
-		}
+		CreateHUDWidget();
 	}
-
-	BindToCharacter( Cast< ALabyrinthProtocolCharacter >( InPawn ) );
 }
 
 void ALabyrinthProtocolPlayerController::OnUnPossess()
 {
-	UnbindFromCharacter();
+	if( HUDWidget != nullptr )
+	{
+		HUDWidget->RemoveFromParent();
+		HUDWidget = nullptr;
+	}
+
 	Super::OnUnPossess();
 }
 
-void ALabyrinthProtocolPlayerController::BindToCharacter( ALabyrinthProtocolCharacter* NewCharacter )
+void ALabyrinthProtocolPlayerController::CreateHUDWidget()
 {
-	UnbindFromCharacter();
-
-	BoundCharacter = NewCharacter;
-	if( BoundCharacter == nullptr )
+	if( !IsLocalPlayerController() || HUDWidgetClass == nullptr || HUDWidget != nullptr )
 	{
 		return;
 	}
 
-	BoundCharacter->OnHUDDataChanged.AddDynamic( this, &ALabyrinthProtocolPlayerController::HandleHUDDataChanged );
-	BoundCharacter->InitializeHUDBindings();
-
+	HUDWidget = CreateWidget< ULabyrinthProtocolHUDWidget >( this, HUDWidgetClass );
 	if( HUDWidget != nullptr )
 	{
-		HUDWidget->ApplyHUDData( BoundCharacter->BuildHUDViewData() );
-	}
-}
-
-void ALabyrinthProtocolPlayerController::UnbindFromCharacter()
-{
-	if( BoundCharacter != nullptr )
-	{
-		BoundCharacter->OnHUDDataChanged.RemoveDynamic( this, &ALabyrinthProtocolPlayerController::HandleHUDDataChanged );
-		BoundCharacter->ClearHUDBindings();
-	}
-
-	BoundCharacter = nullptr;
-}
-
-void ALabyrinthProtocolPlayerController::HandleHUDDataChanged( FLabyrinthProtocolHUDViewData HUDData )
-{
-	if( HUDWidget != nullptr )
-	{
-		HUDWidget->ApplyHUDData( HUDData );
+		HUDWidget->AddToViewport( 0 );
 	}
 }

@@ -7,9 +7,8 @@
 #include "LabyrinthProtocolPlayerController.generated.h"
 
 class ULabyrinthProtocolHUDWidget;
-class ALabyrinthProtocolCharacter;
 
-UCLASS()
+UCLASS( Blueprintable )
 class LABYRINTHPROTOCOL_API ALabyrinthProtocolPlayerController : public APlayerController
 {
 	GENERATED_BODY()
@@ -18,22 +17,15 @@ public:
 	ALabyrinthProtocolPlayerController();
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void OnPossess( APawn* InPawn ) override;
 	virtual void OnUnPossess() override;
 
-	UPROPERTY( EditDefaultsOnly, Category = "HUD" )
+	UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "HUD" )
 	TSubclassOf< ULabyrinthProtocolHUDWidget > HUDWidgetClass;
 
-private:
-	UFUNCTION()
-	void HandleHUDDataChanged( FLabyrinthProtocolHUDViewData HUDData );
+	void CreateHUDWidget();
 
-	void BindToCharacter( ALabyrinthProtocolCharacter* Character );
-	void UnbindFromCharacter();
-
-	UPROPERTY()
+	UPROPERTY( BlueprintReadOnly, Category = "HUD" )
 	TObjectPtr< ULabyrinthProtocolHUDWidget > HUDWidget;
-
-	UPROPERTY()
-	TObjectPtr< ALabyrinthProtocolCharacter > BoundCharacter;
 };

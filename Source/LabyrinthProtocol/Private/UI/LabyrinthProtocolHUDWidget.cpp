@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/LabyrinthProtocolHUDWidget.h"
+#include "LabyrinthProtocol/LabyrinthProtocolCharacter.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
@@ -37,6 +38,64 @@ void ULabyrinthProtocolHUDWidget::NativeConstruct()
 
 	DamageOverlayAlpha = 0.0f;
 	UpdateDamageOverlayVisual();
+	BindToPlayerCharacter();
+}
+
+void ULabyrinthProtocolHUDWidget::NativeDestruct()
+{
+	UnbindFromCharacter();
+
+	if( UWorld* World = GetWidgetWorld( this ) )
+	{
+		World->GetTimerManager().ClearTimer( CharacterBindingRetryTimerHandle );
+		World->GetTimerManager().ClearTimer( DamageOverlayFadeTimerHandle );
+	}
+
+	Super::NativeDestruct();
+}
+
+void ULabyrinthProtocolHUDWidget::BindToPlayerCharacter()
+{
+	UnbindFromCharacter();
+
+	APlayerController* const PlayerController = GetOwningPlayer();
+	ALabyrinthProtocolCharacter* const Character = PlayerController != nullptr
+		? Cast< ALabyrinthProtocolCharacter >( PlayerController->GetPawn() )
+		: nullptr;
+
+	if( Character == nullptr )
+	{
+		if( UWorld* World = GetWidgetWorld( this ) )
+		{
+			World->GetTimerManager().SetTimer(
+				CharacterBindingRetryTimerHandle,
+				this,
+				&ULabyrinthProtocolHUDWidget::BindToPlayerCharacter,
+				0.1f,
+				false
+			);
+		}
+		return;
+	}
+
+	BoundCharacter = Character;
+	BoundCharacter->OnHUDDataChanged.AddDynamic( this, &ULabyrinthProtocolHUDWidget::HandleHUDDataChanged );
+	BoundCharacter->InitializeHUDBindings();
+	ApplyHUDData( BoundCharacter->BuildHUDViewData() );
+}
+
+void ULabyrinthProtocolHUDWidget::UnbindFromCharacter()
+{
+	if( BoundCharacter != nullptr )
+	{
+		BoundCharacter->OnHUDDataChanged.RemoveDynamic( this, &ULabyrinthProtocolHUDWidget::HandleHUDDataChanged );
+		BoundCharacter = nullptr;
+	}
+}
+
+void ULabyrinthProtocolHUDWidget::HandleHUDDataChanged( FLabyrinthProtocolHUDViewData HUDData )
+{
+	ApplyHUDData( HUDData );
 }
 
 void ULabyrinthProtocolHUDWidget::TickDamageOverlayFade()
@@ -70,11 +129,37 @@ void ULabyrinthProtocolHUDWidget::ApplyHUDData( const FLabyrinthProtocolHUDViewD
 	{
 		SetCounterText( CurrentAmmoWidget, HUDData.MagazineAmmo );
 		SetCounterText( MaxAmmoWidget, HUDData.MaxMagazineAmmo );
+
+		if( ReserveAmmoWidget != nullptr )
+		{
+			if( HUDData.MaxReserveAmmo > 0 )
+			{
+				ReserveAmmoWidget->SetText( FText::FromString( FString::Printf(
+					TEXT( "Res: %d / %d" ),
+					HUDData.ReserveAmmo,
+					HUDData.MaxReserveAmmo
+				) ) );
+			}
+			else
+			{
+				ReserveAmmoWidget->SetText( FText::FromString( FString::Printf(
+					TEXT( "Res: %d" ),
+					HUDData.ReserveAmmo
+				) ) );
+			}
+
+			ReserveAmmoWidget->SetVisibility( ESlateVisibility::Visible );
+		}
 	}
 	else
 	{
 		SetCounterText( CurrentAmmoWidget, 0 );
 		SetCounterText( MaxAmmoWidget, 0 );
+
+		if( ReserveAmmoWidget != nullptr )
+		{
+			ReserveAmmoWidget->SetText( FText::FromString( TEXT( "Res: 0" ) ) );
+		}
 	}
 
 	if( HUDData.bTookDamage && HUDData.DamageTakenAmount > 0 )
@@ -94,6 +179,11 @@ void ULabyrinthProtocolHUDWidget::ApplyHUDData( const FLabyrinthProtocolHUDViewD
 
 void ULabyrinthProtocolHUDWidget::SetCounterText( UTextBlock* TextWidget, int32 Value, int32 FallbackValue ) const
 {
+	if( TextWidget == nullptr )
+	{
+		return;
+	}
+
 	TextWidget->SetText( FText::AsNumber( Value >= 0 ? Value : FallbackValue ) );
 }
 
@@ -108,6 +198,11 @@ void ULabyrinthProtocolHUDWidget::UpdateHealthBarVisuals( float HealthPercent )
 
 void ULabyrinthProtocolHUDWidget::PlayDamageOverlay( int32 DamageAmount )
 {
+	if( DamageOverlay == nullptr )
+	{
+		return;
+	}
+
 	const float DamageIntensity = FMath::Clamp(
 		static_cast< float >( DamageAmount ) / DamageOverlayReferenceDamage,
 		0.25f,
@@ -132,6 +227,11 @@ void ULabyrinthProtocolHUDWidget::PlayDamageOverlay( int32 DamageAmount )
 
 void ULabyrinthProtocolHUDWidget::UpdateDamageOverlayVisual() const
 {
+	if( DamageOverlay == nullptr )
+	{
+		return;
+	}
+
 	if( DamageOverlayAlpha <= KINDA_SMALL_NUMBER )
 	{
 		DamageOverlay->SetVisibility( ESlateVisibility::Collapsed );

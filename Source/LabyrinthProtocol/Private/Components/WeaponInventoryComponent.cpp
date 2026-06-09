@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Components/WeaponInventoryComponent.h"
-#include "LabyrinthProtocolCharacter.h"
-#include "LabyrinthProtocolWeaponComponent.h"
+#include "LabyrinthProtocol/LabyrinthProtocolCharacter.h"
+#include "LabyrinthProtocol/LabyrinthProtocolWeaponComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Actor.h"
 
