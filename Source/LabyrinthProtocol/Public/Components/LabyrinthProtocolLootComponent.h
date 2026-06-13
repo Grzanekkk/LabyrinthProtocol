@@ -46,10 +46,16 @@ protected:
 	TArray< TSubclassOf< ALabyrinthProtocolAmmoPickup > > AmmoPickupClasses;
 
 	UPROPERTY( EditDefaultsOnly, Category = "Loot|Spawn", meta = ( ClampMin = "0.0", UIMin = "0.0" ) )
-	float SpawnHeightOffset = 40.0f;
+	float SpawnHeightOffset = 12.0f;
 
 	UPROPERTY( EditDefaultsOnly, Category = "Loot|Spawn", meta = ( ClampMin = "0.0", UIMin = "0.0" ) )
 	float SpawnRadius = 35.0f;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Loot|Spawn" )
+	bool bTraceToGround = true;
+
+	UPROPERTY( EditDefaultsOnly, Category = "Loot|Spawn", meta = ( ClampMin = "0.0", UIMin = "0.0" ) )
+	float GroundTraceDistance = 500.0f;
 
 	virtual void BeginPlay() override;
 
@@ -59,6 +65,7 @@ protected:
 	ELabyrinthProtocolLootDropType RollLootDropType() const;
 	TSubclassOf< ALabyrinthProtocolAmmoPickup > PickRandomAmmoPickupClass() const;
 	bool HasValidAmmoPickupClasses() const;
+	FVector GetPickupSpawnLocation( const FVector& OriginLocation ) const;
 	void SpawnPickupAtOwner( TSubclassOf< AActor > PickupClass );
 
 private:

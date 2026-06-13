@@ -36,8 +36,7 @@ void ULabyrinthProtocolHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	DamageOverlayAlpha = 0.0f;
-	UpdateDamageOverlayVisual();
+	HideDamageOverlay();
 	BindToPlayerCharacter();
 }
 
@@ -52,6 +51,61 @@ void ULabyrinthProtocolHUDWidget::NativeDestruct()
 	}
 
 	Super::NativeDestruct();
+}
+
+void ULabyrinthProtocolHUDWidget::TickDamageOverlay()
+{
+	UWorld* const World = GetWidgetWorld( this );
+	if( World == nullptr || DamageOverlay == nullptr )
+	{
+		return;
+	}
+
+	const float DeltaTime = 0.016f;
+
+	if( bDamageOverlayFadingIn )
+	{
+		DamageOverlayOpacity = FMath::Min(
+			DamageOverlayOpacity + ( DamageOverlayFadeInSpeed * DeltaTime ),
+			DamageOverlayTargetOpacity
+		);
+		UpdateDamageOverlayOpacity( DamageOverlayOpacity );
+
+		if( DamageOverlayOpacity >= DamageOverlayTargetOpacity )
+		{
+			bDamageOverlayFadingIn = false;
+			bDamageOverlayFadingOut = true;
+		}
+	}
+	else if( bDamageOverlayFadingOut )
+	{
+		DamageOverlayOpacity = FMath::Max(
+			DamageOverlayOpacity - ( DamageOverlayFadeOutSpeed * DeltaTime ),
+			0.0f
+		);
+		UpdateDamageOverlayOpacity( DamageOverlayOpacity );
+
+		if( DamageOverlayOpacity <= KINDA_SMALL_NUMBER )
+		{
+			bDamageOverlayFadingOut = false;
+			World->GetTimerManager().ClearTimer( DamageOverlayFadeTimerHandle );
+			HideDamageOverlay();
+			return;
+		}
+	}
+	else
+	{
+		World->GetTimerManager().ClearTimer( DamageOverlayFadeTimerHandle );
+		return;
+	}
+
+	World->GetTimerManager().SetTimer(
+		DamageOverlayFadeTimerHandle,
+		this,
+		&ULabyrinthProtocolHUDWidget::TickDamageOverlay,
+		0.016f,
+		false
+	);
 }
 
 void ULabyrinthProtocolHUDWidget::BindToPlayerCharacter()
@@ -96,24 +150,6 @@ void ULabyrinthProtocolHUDWidget::UnbindFromCharacter()
 void ULabyrinthProtocolHUDWidget::HandleHUDDataChanged( FLabyrinthProtocolHUDViewData HUDData )
 {
 	ApplyHUDData( HUDData );
-}
-
-void ULabyrinthProtocolHUDWidget::TickDamageOverlayFade()
-{
-	UWorld* const World = GetWidgetWorld( this );
-	if( World == nullptr )
-	{
-		return;
-	}
-
-	const float DeltaTime = World->GetDeltaSeconds();
-	DamageOverlayAlpha = FMath::Max( 0.0f, DamageOverlayAlpha - ( DamageOverlayFadeSpeed * DeltaTime ) );
-	UpdateDamageOverlayVisual();
-
-	if( DamageOverlayAlpha <= KINDA_SMALL_NUMBER )
-	{
-		World->GetTimerManager().ClearTimer( DamageOverlayFadeTimerHandle );
-	}
 }
 
 void ULabyrinthProtocolHUDWidget::ApplyHUDData( const FLabyrinthProtocolHUDViewData& HUDData )
@@ -162,14 +198,12 @@ void ULabyrinthProtocolHUDWidget::ApplyHUDData( const FLabyrinthProtocolHUDViewD
 		}
 	}
 
-	if( HUDData.bTookDamage && HUDData.DamageTakenAmount > 0 )
+	const int32 DamageAmount = HUDData.bTookDamage
+		? HUDData.DamageTakenAmount
+		: ( HUDData.HealthDelta < 0 ? FMath::Abs( HUDData.HealthDelta ) : 0 );
+
+	if( DamageAmount > 0 )
 	{
-		PlayDamageOverlay( HUDData.DamageTakenAmount );
-		OnDamageTaken( HUDData.DamageTakenAmount );
-	}
-	else if( HUDData.HealthDelta < 0 )
-	{
-		const int32 DamageAmount = FMath::Abs( HUDData.HealthDelta );
 		PlayDamageOverlay( DamageAmount );
 		OnDamageTaken( DamageAmount );
 	}
@@ -205,40 +239,47 @@ void ULabyrinthProtocolHUDWidget::PlayDamageOverlay( int32 DamageAmount )
 
 	const float DamageIntensity = FMath::Clamp(
 		static_cast< float >( DamageAmount ) / DamageOverlayReferenceDamage,
-		0.25f,
+		0.35f,
 		1.0f
 	);
 
-	DamageOverlayAlpha = FMath::Max( DamageOverlayAlpha, DamageOverlayMaxAlpha * DamageIntensity );
-	UpdateDamageOverlayVisual();
+	DamageOverlayTargetOpacity = DamageOverlayMaxOpacity * DamageIntensity;
+	DamageOverlayOpacity = 0.0f;
+	bDamageOverlayFadingIn = true;
+	bDamageOverlayFadingOut = false;
 
-	UWorld* const World = GetWidgetWorld( this );
-	if( World != nullptr )
+	DamageOverlay->SetVisibility( ESlateVisibility::HitTestInvisible );
+	UpdateDamageOverlayOpacity( 0.0f );
+
+	if( UWorld* const World = GetWidgetWorld( this ) )
 	{
 		World->GetTimerManager().SetTimer(
 			DamageOverlayFadeTimerHandle,
 			this,
-			&ULabyrinthProtocolHUDWidget::TickDamageOverlayFade,
+			&ULabyrinthProtocolHUDWidget::TickDamageOverlay,
 			0.016f,
-			true
+			false
 		);
 	}
 }
 
-void ULabyrinthProtocolHUDWidget::UpdateDamageOverlayVisual() const
+void ULabyrinthProtocolHUDWidget::UpdateDamageOverlayOpacity( float Opacity ) const
 {
 	if( DamageOverlay == nullptr )
 	{
 		return;
 	}
 
-	if( DamageOverlayAlpha <= KINDA_SMALL_NUMBER )
+	DamageOverlay->SetRenderOpacity( Opacity );
+}
+
+void ULabyrinthProtocolHUDWidget::HideDamageOverlay() const
+{
+	if( DamageOverlay == nullptr )
 	{
-		DamageOverlay->SetVisibility( ESlateVisibility::Collapsed );
-		DamageOverlay->SetColorAndOpacity( FLinearColor( 0.85f, 0.0f, 0.0f, 0.0f ) );
 		return;
 	}
 
-	DamageOverlay->SetVisibility( ESlateVisibility::HitTestInvisible );
-	DamageOverlay->SetColorAndOpacity( FLinearColor( 0.85f, 0.0f, 0.0f, DamageOverlayAlpha ) );
+	DamageOverlay->SetRenderOpacity( 0.0f );
+	DamageOverlay->SetVisibility( ESlateVisibility::Collapsed );
 }

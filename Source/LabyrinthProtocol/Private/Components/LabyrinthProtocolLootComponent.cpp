@@ -128,6 +128,37 @@ float ULabyrinthProtocolLootComponent::GetNothingDropChance() const
 	return FMath::Clamp( 1.0f - ClampedHealthChance - ClampedAmmoChance, 0.0f, 1.0f );
 }
 
+FVector ULabyrinthProtocolLootComponent::GetPickupSpawnLocation( const FVector& OriginLocation ) const
+{
+	const FVector RandomOffset = FVector(
+		FMath::FRandRange( -SpawnRadius, SpawnRadius ),
+		FMath::FRandRange( -SpawnRadius, SpawnRadius ),
+		0.0f
+	);
+
+	FVector SpawnLocation = OriginLocation + RandomOffset;
+
+	if( bTraceToGround )
+	{
+		UWorld* const World = GetWorld();
+		if( World != nullptr )
+		{
+			const FVector TraceStart = SpawnLocation + FVector( 0.0f, 0.0f, 100.0f );
+			const FVector TraceEnd = SpawnLocation - FVector( 0.0f, 0.0f, GroundTraceDistance );
+
+			FHitResult HitResult;
+			FCollisionQueryParams QueryParams( SCENE_QUERY_STAT( LootPickupGroundTrace ), false, GetOwner() );
+
+			if( World->LineTraceSingleByChannel( HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams ) )
+			{
+				SpawnLocation = HitResult.ImpactPoint;
+			}
+		}
+	}
+
+	return SpawnLocation + FVector( 0.0f, 0.0f, SpawnHeightOffset );
+}
+
 void ULabyrinthProtocolLootComponent::SpawnPickupAtOwner( TSubclassOf< AActor > PickupClass )
 {
 	AActor* const Owner = GetOwner();
@@ -137,14 +168,9 @@ void ULabyrinthProtocolLootComponent::SpawnPickupAtOwner( TSubclassOf< AActor > 
 		return;
 	}
 
-	const FVector BaseLocation = Owner->GetActorLocation() + FVector( 0.0f, 0.0f, SpawnHeightOffset );
-	const FVector RandomOffset = FVector(
-		FMath::FRandRange( -SpawnRadius, SpawnRadius ),
-		FMath::FRandRange( -SpawnRadius, SpawnRadius ),
-		0.0f
-	);
+	const FVector SpawnLocation = GetPickupSpawnLocation( Owner->GetActorLocation() );
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	World->SpawnActor< AActor >( PickupClass, BaseLocation + RandomOffset, FRotator::ZeroRotator, SpawnParams );
+	World->SpawnActor< AActor >( PickupClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams );
 }

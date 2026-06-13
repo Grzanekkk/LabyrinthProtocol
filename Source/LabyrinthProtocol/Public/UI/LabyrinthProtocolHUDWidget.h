@@ -28,7 +28,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	UPROPERTY(BlueprintReadWrite, meta = ( BindWidget ) )
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
 	TObjectPtr< UTextBlock > CurrentHealthWidget;
 
 	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
@@ -46,22 +46,26 @@ protected:
 	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget ) )
 	TObjectPtr< UProgressBar > HealthBar;
 
-	UPROPERTY( BlueprintReadWrite, meta = ( BindWidget) )
+	UPROPERTY( BlueprintReadWrite, meta = ( BindWidgetOptional ) )
 	TObjectPtr< UImage > DamageOverlay;
 
 	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "0.0", UIMin = "0.0" ) )
-	float DamageOverlayMaxAlpha = 0.45f;
+	float DamageOverlayMaxOpacity = 0.5f;
 
 	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "0.1", UIMin = "0.1" ) )
-	float DamageOverlayFadeSpeed = 2.5f;
+	float DamageOverlayFadeInSpeed = 4.0f;
+
+	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "0.1", UIMin = "0.1" ) )
+	float DamageOverlayFadeOutSpeed = 2.0f;
 
 	UPROPERTY( EditDefaultsOnly, Category = "HUD|Damage", meta = ( ClampMin = "1.0", UIMin = "1.0" ) )
 	float DamageOverlayReferenceDamage = 30.0f;
 
 	void UpdateHealthBarVisuals( float HealthPercent );
 	void PlayDamageOverlay( int32 DamageAmount );
-	void UpdateDamageOverlayVisual() const;
-	void TickDamageOverlayFade();
+	void TickDamageOverlay();
+	void UpdateDamageOverlayOpacity( float Opacity ) const;
+	void HideDamageOverlay() const;
 	void SetCounterText( UTextBlock* TextWidget, int32 Value, int32 FallbackValue = 0 ) const;
 	void UnbindFromCharacter();
 
@@ -78,9 +82,12 @@ private:
 	UPROPERTY()
 	TObjectPtr< ALabyrinthProtocolCharacter > BoundCharacter;
 
-	float DamageOverlayAlpha = 0.0f;
-
-	FTimerHandle DamageOverlayFadeTimerHandle;
+	float DamageOverlayOpacity = 0.0f;
+	float DamageOverlayTargetOpacity = 0.0f;
+	bool bDamageOverlayFadingIn = false;
+	bool bDamageOverlayFadingOut = false;
 
 	FTimerHandle CharacterBindingRetryTimerHandle;
+
+	FTimerHandle DamageOverlayFadeTimerHandle;
 };
