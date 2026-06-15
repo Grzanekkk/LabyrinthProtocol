@@ -4,6 +4,8 @@
 #include "LabyrinthProtocolWeaponComponent.h"
 #include "Components/WeaponInventoryComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/LabyrinthProtocolTacticalFlashlightComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -30,6 +32,13 @@ ALabyrinthProtocolCharacter::ALabyrinthProtocolCharacter()
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
 	Mesh1P->SetRelativeLocation( FVector( -30.f, 0.f, -150.f ) );
+
+	TacticalFlashlightComponent = CreateDefaultSubobject< ULabyrinthProtocolTacticalFlashlightComponent >( TEXT( "TacticalFlashlight" ) );
+	TacticalFlashlightComponent->SetupAttachment( FirstPersonCameraComponent );
+
+	TacticalFlashlightSpotLight = CreateDefaultSubobject< USpotLightComponent >( TEXT( "TacticalFlashlightSpot" ) );
+	TacticalFlashlightSpotLight->SetupAttachment( TacticalFlashlightComponent );
+	TacticalFlashlightComponent->RegisterSpotLight( TacticalFlashlightSpotLight );
 
 	WeaponInventoryComponent = CreateDefaultSubobject< UWeaponInventoryComponent >( TEXT( "WeaponInventory" ) );
 }

@@ -17,6 +17,8 @@ class UInputMappingContext;
 class UHealthComponent;
 class UWeaponInventoryComponent;
 class ULabyrinthProtocolWeaponComponent;
+class ULabyrinthProtocolTacticalFlashlightComponent;
+class USpotLightComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN( LogTemplateCharacter, Log, All );
@@ -33,6 +35,12 @@ public:
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = ( AllowPrivateAccess = "true" ) )
 	UCameraComponent* FirstPersonCameraComponent;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Flashlight, meta = ( AllowPrivateAccess = "true" ) )
+	TObjectPtr< ULabyrinthProtocolTacticalFlashlightComponent > TacticalFlashlightComponent;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Flashlight, meta = ( AllowPrivateAccess = "true" ) )
+	TObjectPtr< USpotLightComponent > TacticalFlashlightSpotLight;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = ( AllowPrivateAccess = "true" ) )
 	TObjectPtr< UWeaponInventoryComponent > WeaponInventoryComponent;
@@ -89,6 +97,8 @@ protected:
 public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	ULabyrinthProtocolTacticalFlashlightComponent* GetTacticalFlashlightComponent() const { return TacticalFlashlightComponent; }
+	USpotLightComponent* GetTacticalFlashlightSpotLight() const { return TacticalFlashlightSpotLight; }
 
 	void RefreshActiveWeaponInput();
 
