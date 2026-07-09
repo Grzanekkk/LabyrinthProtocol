@@ -379,6 +379,23 @@ void ALabyrinthProtocolCharacter::BroadcastHUDUpdate()
 	OnHUDDataChanged.Broadcast( BuildHUDViewData() );
 }
 
+ULabyrinthProtocolWeaponComponent* ALabyrinthProtocolCharacter::FindWeaponComponentByAmmoType(
+	ELabyrinthProtocolAmmoType AmmoType ) const
+{
+	TArray< ULabyrinthProtocolWeaponComponent* > WeaponComponents;
+	GetComponents< ULabyrinthProtocolWeaponComponent >( WeaponComponents );
+
+	for( ULabyrinthProtocolWeaponComponent* WeaponComponent : WeaponComponents )
+	{
+		if( WeaponComponent != nullptr && WeaponComponent->GetAmmoType() == AmmoType )
+		{
+			return WeaponComponent;
+		}
+	}
+
+	return nullptr;
+}
+
 bool ALabyrinthProtocolCharacter::TryAddReserveAmmo( ELabyrinthProtocolAmmoType AmmoType, int32 Amount )
 {
 	if( Amount <= 0 )
@@ -386,13 +403,8 @@ bool ALabyrinthProtocolCharacter::TryAddReserveAmmo( ELabyrinthProtocolAmmoType 
 		return false;
 	}
 
-	ULabyrinthProtocolWeaponComponent* const WeaponComponent = GetWeaponComponent();
+	ULabyrinthProtocolWeaponComponent* const WeaponComponent = FindWeaponComponentByAmmoType( AmmoType );
 	if( WeaponComponent == nullptr )
-	{
-		return false;
-	}
-
-	if( WeaponComponent->GetAmmoType() != AmmoType )
 	{
 		return false;
 	}

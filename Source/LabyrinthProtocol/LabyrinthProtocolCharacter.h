@@ -129,6 +129,9 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "Weapon|Ammo" )
 	bool TryAddReserveAmmo( ELabyrinthProtocolAmmoType AmmoType, int32 Amount );
 
+	UFUNCTION( BlueprintPure, Category = "Weapon|Ammo" )
+	ULabyrinthProtocolWeaponComponent* FindWeaponComponentByAmmoType( ELabyrinthProtocolAmmoType AmmoType ) const;
+
 private:
 	UPROPERTY()
 	TObjectPtr< UHealthComponent > BoundHealthComponent;
